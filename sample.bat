@@ -55,10 +55,10 @@ REM DELETING LOCAL BRANCH
 		Goto End
 	)
 :clear_unstaged
-	call git status 
+	REM call git status 
 	call git add .
 	call git reset --merge
-	call git status
+	REM call git status
 	call git checkout %CURBRANCH%
 	start checkIns.bat	
 :end
