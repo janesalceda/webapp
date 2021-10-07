@@ -46,19 +46,21 @@ REM DELETING LOCAL BRANCH
 	REM call git branch | grep -v `git branch --show-current` | xargs git branch -d
 	set /p curbranch="Enter branch: "
 	if %CURBRANCH% == master (
-		GOTO checkout_branch
+		GOTO clear_unstaged
 	) else if %CURBRANCH% == develop (
-		GOTO checkout_branch 
+		GOTO clear_unstaged
 	) else (
 		echo This '%CURBRANCH%' branch doesn't exist. Please enter correct branch.
 		GOTO scenario_two
 		start checkIns.bat
 		Goto End
 	)
+:clear_unstaged
 	call git status 
 	call git add .
 	call git reset --merge
 	call git status
+	call git checkout %CURBRANCH%
 	REM CHECKING IF BRANCH IS EXIST OR NOT
 	
 :end
