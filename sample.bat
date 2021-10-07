@@ -11,7 +11,7 @@ if %scenario% == 1 (
 	GOTO scenario_one
 ) else if %scenario% == 2 ( 
 	GOTO scenario_two
-) else ( GOTO noscenario)
+) else ( GOTO noscenario )
 
 REM IF INPUT IS NOT BETWEEN 1 OR 2
 :noscenario
@@ -52,7 +52,6 @@ REM DELETING LOCAL BRANCH
 	) else (
 		echo This '%CURBRANCH%' branch doesn't exist. Please enter correct branch.
 		GOTO scenario_two
-		start checkIns.bat
 		Goto End
 	)
 :clear_unstaged
@@ -61,6 +60,5 @@ REM DELETING LOCAL BRANCH
 	call git reset --merge
 	call git status
 	call git checkout %CURBRANCH%
-	REM CHECKING IF BRANCH IS EXIST OR NOT
-	
+	start checkIns.bat	
 :end
