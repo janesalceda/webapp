@@ -45,11 +45,6 @@ REM IF SCENARIO 2 HAS CHOSEN
 REM DELETING LOCAL BRANCH
 	REM call git branch | grep -v `git branch --show-current` | xargs git branch -d
 	set /p curbranch="Enter branch: "
-	call git status 
-	call git add .
-	call git reset --merge
-	call git status
-	REM CHECKING IF BRANCH IS EXIST OR NOT
 	if %CURBRANCH% == master (
 		GOTO checkout_branch
 	) else if %CURBRANCH% == develop (
@@ -60,4 +55,10 @@ REM DELETING LOCAL BRANCH
 		start checkIns.bat
 		Goto End
 	)
+	call git status 
+	call git add .
+	call git reset --merge
+	call git status
+	REM CHECKING IF BRANCH IS EXIST OR NOT
+	
 :end
