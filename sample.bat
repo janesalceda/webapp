@@ -43,7 +43,7 @@ REM IF SCENARIO 1 HAS CHOSEN
 	
 REM IF SCENARIO 2 HAS CHOSEN
 :scenario_two
-	REM echo you choose scenario 2
+	REM echo you choose scenario 2 
 	call git status 
 REM DELETING LOCAL BRANCH
 	call git branch | grep -v `git branch --show-current` | xargs git branch -d
@@ -53,9 +53,9 @@ REM DELETING LOCAL BRANCH
 	call git status 
 	set /p CURBRANCH="Enter the name of the branch:"
 
-	for /f "delims=" %%i in ('where git') do set gitpath=%%i
+	REM for /f "delims=" %%i in ('where git') do set gitpath=%%i
 
-	start "" "%gitpath%\..\..\bin\sh.exe" --login -i -c "git checkout %CURBRANCH%"
+	REM start "" "%gitpath%\..\..\bin\sh.exe" --login -i -c "git checkout %CURBRANCH%"
 	Goto End
 :end
 	echo.
