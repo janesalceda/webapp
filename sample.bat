@@ -52,7 +52,6 @@ REM DELETING LOCAL BRANCH
 	) else (
 		echo This '%CURBRANCH%' branch doesn't exist. Please enter correct branch.
 		GOTO scenario_two
-		Goto End
 	)
 :clear_unstaged
 	REM call git status 
