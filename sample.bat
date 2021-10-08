@@ -1,3 +1,4 @@
+
 @echo off
 echo                              FIXING BITBUCKET ISSUES
 echo ======================================================================================
@@ -35,29 +36,27 @@ REM IF SCENARIO 1 HAS CHOSEN
 	)
 	
 :checkout_branch
-		call git checkout %CURBRANCH%
-		start checkIns.bat
-		Goto End
+	echo.
+	call git checkout %CURBRANCH%
+	REM start checkIns.bat
+	Goto End
 	
 REM IF SCENARIO 2 HAS CHOSEN
 :scenario_two
-	echo you choose scenario 2
+	REM echo you choose scenario 2
+	call git status 
 REM DELETING LOCAL BRANCH
-	REM call git branch | grep -v `git branch --show-current` | xargs git branch -d
-	set /p curbranch="Enter branch: "
-	if %CURBRANCH% == master (
-		GOTO clear_unstaged
-	) else if %CURBRANCH% == develop (
-		GOTO clear_unstaged
-	) else (
-		echo This '%CURBRANCH%' branch doesn't exist. Please enter correct branch.
-		GOTO scenario_two
-	)
-:clear_unstaged
-	REM call git status 
+	call git branch | grep -v `git branch --show-current` | xargs git branch -d
 	call git add .
 	call git reset --merge
-	REM call git status
-	call git checkout %CURBRANCH%
-	start checkIns.bat	
+	echo.
+	call git status 
+	set /p CURBRANCH="Enter the name of the branch:"
+
+	for /f "delims=" %%i in ('where git') do set gitpath=%%i
+
+	start "" "%gitpath%\..\..\bin\sh.exe" --login -i -c "git checkout %CURBRANCH%"
+	Goto End
 :end
+	echo.
+	cmd /k
