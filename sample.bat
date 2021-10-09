@@ -23,7 +23,6 @@ REM IF INPUT IS NOT BETWEEN 1 OR 2
 
 REM IF SCENARIO 1 HAS CHOSEN
 :scenario_one 
-	REM echo you choose scenario 1
 	set /p curbranch="Enter branch: "
 	REM CHECKING IF BRANCH IS EXIST OR NOT
 	if %CURBRANCH% == master (
@@ -38,25 +37,29 @@ REM IF SCENARIO 1 HAS CHOSEN
 :checkout_branch
 	echo.
 	call git checkout %CURBRANCH%
-	REM start checkIns.bat
 	Goto End
 	
 REM IF SCENARIO 2 HAS CHOSEN
 :scenario_two
-	REM echo you choose scenario 2 
+	echo.
 	call git status 
-REM DELETING LOCAL BRANCH
-	call git branch | grep -v `git branch --show-current` | xargs git branch -d
+	echo Deleting Local Branch . . . Please wait . . .
+	for /f %%i in ('git branch') do ( 
+		If NOT %%i == * (
+			echo Deleting %%i branch is in progress...
+		)else (echo.)
+	)
+	if errorlevel 1 goto error_echo
 	call git add .
 	call git reset --merge
 	echo.
 	call git status 
-	set /p CURBRANCH="Enter the name of the branch:"
 
-	REM for /f "delims=" %%i in ('where git') do set gitpath=%%i
-
-	REM start "" "%gitpath%\..\..\bin\sh.exe" --login -i -c "git checkout %CURBRANCH%"
+	for /f "delims=" %%i in ('where git') do set gitpath=%%i
+	start "" "%gitpath%\..\..\bin\sh.exe" --login -i -c "git checkout master"
 	Goto End
+:error_echo
+	cmd /k
 :end
 	echo.
 	cmd /k
