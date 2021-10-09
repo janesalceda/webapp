@@ -49,7 +49,10 @@ REM IF SCENARIO 2 HAS CHOSEN
 			echo Deleting %%i branch is in progress...
 		)else (echo.)
 	)
+<<<<<<< HEAD
 	if errorlevel 1 goto error_echo
+=======
+>>>>>>> 8b15f65ac3f22c388a9bee0807707530c09657be
 	call git add .
 	call git reset --merge
 	echo.
