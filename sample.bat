@@ -43,10 +43,11 @@ REM IF SCENARIO 1 HAS CHOSEN
 	
 REM IF SCENARIO 2 HAS CHOSEN
 :scenario_two
-	REM echo you choose scenario 2 
-	call git status 
-REM DELETING LOCAL BRANCH
-	call git branch | grep -v `git branch --show-current` | xargs git branch -d
+	echo you choose scenario 2 
+	REM echo KKZiomek | find "KKZ"
+	call git branch | findstr /v "master" | xargs git branch -d
+	set /p CURBRANCH="Enter the name of the branch:"
+	REM call git branch | grep -v `git branch --show-current` | xargs git branch -d
 	call git add .
 	call git reset --merge
 	echo.
@@ -57,6 +58,9 @@ REM DELETING LOCAL BRANCH
 
 	REM start "" "%gitpath%\..\..\bin\sh.exe" --login -i -c "git checkout %CURBRANCH%"
 	Goto End
+:error_echo
+	set /p CURBRANCH="Enter the name of the branch:"
+	cmd /k
 :end
 	echo.
 	cmd /k
