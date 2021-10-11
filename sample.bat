@@ -47,6 +47,8 @@ REM IF SCENARIO 2 HAS CHOSEN
 	for /f %%i in ('git branch') do ( 
 		If NOT %%i == * (
 			echo Deleting %%i branch is in progress...
+			call git branch -D %%i
+			echo Successful deleting %%i branch.
 		)else (echo.)
 	)
 	call git add .
