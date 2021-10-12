@@ -42,15 +42,14 @@ REM IF SCENARIO 1 HAS CHOSEN
 REM IF SCENARIO 2 HAS CHOSEN
 :scenario_two
 	echo.
-	call git status 
 	echo Deleting Local Branch . . . Please wait . . .
 	for /f %%i in ('git branch') do ( 
 		If NOT %%i == * (
 			echo Deleting %%i branch is in progress...
 			call git branch -D %%i
-			echo Successful deleting %%i branch.
 		)else (echo.)
 	)
+	call git status 
 	call git add .
 	call git reset --merge
 	echo.
@@ -58,6 +57,7 @@ REM IF SCENARIO 2 HAS CHOSEN
 
 	for /f "delims=" %%i in ('where git') do set gitpath=%%i
 	start "" "%gitpath%\..\..\bin\sh.exe" --login -i -c "git checkout master"
+	call git status 
 	Goto End
 :error_echo
 	cmd /k
