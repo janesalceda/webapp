@@ -1,0 +1,102 @@
+package com.sds.knoxportal.client;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class MailSend {
+	public static void main(String[] args) {
+		String token = "1a2b3c4d5e6f7g8h9i0j1234567890ab"; // ��û�ý����� ���� �߱޹��� ��ū������ ����
+		String header = "Bearer " + token;
+
+		try {
+			String apiUrl = "https://openapi.stage.samsung.net/mail/sub/api/basic/v1.0/sendMail";
+			URL url = new URL(apiUrl);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setRequestMethod("POST");
+			con.setRequestProperty("Authorization", header);
+			con.setRequestProperty("Content-Type", "application/json");
+			con.setDoOutput(true);
+
+			JSONObject jsonString = makeBodyForm();
+
+			DataOutputStream dataOutputStream = new DataOutputStream(con.getOutputStream());
+			dataOutputStream.write(jsonString.toString().getBytes());
+			dataOutputStream.flush();
+			dataOutputStream.close();
+
+			int responseCode = con.getResponseCode();
+			BufferedReader br;
+
+			if (responseCode == 200) {
+				br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			} else {
+				br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
+			}
+
+			String line;
+			StringBuffer response = new StringBuffer();
+			while ((line = br.readLine()) != null) {
+				response.append(line);
+			}
+			br.close();
+
+			System.out.println(response.toString());
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+	private static JSONObject makeBodyForm() {
+		String body = "Mail Body Test";
+		JSONObject jsonString = new JSONObject();
+
+		JSONObject drmOption = new JSONObject();
+		drmOption.put("validDays", "");
+		drmOption.put("useCount", "");
+		drmOption.put("canView", "");
+		drmOption.put("canPrint", "");
+		drmOption.put("confirmMail", "");
+		drmOption.put("confirmMail4in", "");
+
+		JSONArray arrayRecipients = new JSONArray();
+		JSONObject recipients = new JSONObject();
+		recipients.put("email", "ms01.test@stage.samsung.com");
+		recipients.put("recipientType", "TO");
+		arrayRecipients.put(recipients);
+
+		JSONArray arrayAttachs = new JSONArray();
+		JSONObject attachs = new JSONObject();
+		// arrayAttachs.put(attachs);
+
+		JSONObject from = new JSONObject();
+		from.put("email", "ms01.test@stage.samsung.com");
+
+		JSONObject sendMailVO = new JSONObject();
+		sendMailVO.put("contentText", body);
+		sendMailVO.put("subject", "EMAIL SUBJECT");
+		sendMailVO.put("docSecuType", "personal");
+		sendMailVO.put("contentType", "html");
+		sendMailVO.put("from", from);
+		sendMailVO.put("attachs", arrayAttachs);
+		sendMailVO.put("recipients", arrayRecipients);
+		sendMailVO.put("drmOption", drmOption);
+
+		JSONObject resourceVO = new JSONObject();
+		resourceVO.put("email", "ms01.test@stage.samsung.com");
+		resourceVO.put("localeStr", "ko_KR");
+		resourceVO.put("encoding", "utf-8");
+		resourceVO.put("timeZone", "GMT+9");
+
+		jsonString.put("resourceVO", resourceVO);
+		jsonString.put("sendMailVO", sendMailVO);
+
+		return jsonString;
+	}
+}
