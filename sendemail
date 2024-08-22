@@ -1,102 +1,100 @@
-package com.sds.knoxportal.client;
+package com.sds.knoxportal.util;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+public class MultipartUtil {
 
-public class MailSend {
-	public static void main(String[] args) {
-		String token = "1a2b3c4d5e6f7g8h9i0j1234567890ab"; // ��û�ý����� ���� �߱޹��� ��ū������ ����
-		String header = "Bearer " + token;
+	private String boundary;
+	private String LINE_FEED = "\r\n";
+	private HttpURLConnection con;
+	private OutputStream outputStream;
+	private PrintWriter printWriter;
 
-		try {
-			String apiUrl = "https://openapi.stage.samsung.net/mail/sub/api/basic/v1.0/sendMail";
-			URL url = new URL(apiUrl);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Authorization", header);
-			con.setRequestProperty("Content-Type", "application/json");
-			con.setDoOutput(true);
+	public MultipartUtil(String apiUrl) throws IOException {
+		boundary = "---" + System.currentTimeMillis() + "---";
+		System.out.println("MultipartUtil boundary = " + boundary);
+		URL url = new URL(apiUrl);
+		con = (HttpURLConnection) url.openConnection();
+		con.setUseCaches(false);
+		con.setDoOutput(true);
+		con.setDoInput(true);
+		con.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+	}
 
-			JSONObject jsonString = makeBodyForm();
+	public void readyToConnect() throws IOException {
+		outputStream = con.getOutputStream();
+		printWriter = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"), true);
+	}
 
-			DataOutputStream dataOutputStream = new DataOutputStream(con.getOutputStream());
-			dataOutputStream.write(jsonString.toString().getBytes());
-			dataOutputStream.flush();
-			dataOutputStream.close();
+	public void addFilePart(String fieldName, File uploadFile) throws IOException {
+		String fileName = uploadFile.getName();
+		printWriter.append("--" + boundary).append(LINE_FEED);
+		printWriter.append("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"")
+				.append(LINE_FEED);
+		printWriter.append("Content-Type: " + URLConnection.guessContentTypeFromName(fileName)).append(LINE_FEED);
+		printWriter.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
+		printWriter.append(LINE_FEED);
+		printWriter.flush();
 
-			int responseCode = con.getResponseCode();
-			BufferedReader br;
-
-			if (responseCode == 200) {
-				br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-			} else {
-				br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
-			}
-
-			String line;
-			StringBuffer response = new StringBuffer();
-			while ((line = br.readLine()) != null) {
-				response.append(line);
-			}
-			br.close();
-
-			System.out.println(response.toString());
-
-		} catch (Exception e) {
-			System.out.println(e);
+		FileInputStream fileInputStream = new FileInputStream(uploadFile);
+		byte[] buffer = new byte[4096];
+		int bytesRead = -1;
+		while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+			outputStream.write(buffer, 0, bytesRead);
 		}
+		outputStream.flush();
+		fileInputStream.close();
+
+		printWriter.append(LINE_FEED);
+		printWriter.flush();
 	}
 
-	private static JSONObject makeBodyForm() {
-		String body = "Mail Body Test";
-		JSONObject jsonString = new JSONObject();
-
-		JSONObject drmOption = new JSONObject();
-		drmOption.put("validDays", "");
-		drmOption.put("useCount", "");
-		drmOption.put("canView", "");
-		drmOption.put("canPrint", "");
-		drmOption.put("confirmMail", "");
-		drmOption.put("confirmMail4in", "");
-
-		JSONArray arrayRecipients = new JSONArray();
-		JSONObject recipients = new JSONObject();
-		recipients.put("email", "ms01.test@stage.samsung.com");
-		recipients.put("recipientType", "TO");
-		arrayRecipients.put(recipients);
-
-		JSONArray arrayAttachs = new JSONArray();
-		JSONObject attachs = new JSONObject();
-		// arrayAttachs.put(attachs);
-
-		JSONObject from = new JSONObject();
-		from.put("email", "ms01.test@stage.samsung.com");
-
-		JSONObject sendMailVO = new JSONObject();
-		sendMailVO.put("contentText", body);
-		sendMailVO.put("subject", "EMAIL SUBJECT");
-		sendMailVO.put("docSecuType", "personal");
-		sendMailVO.put("contentType", "html");
-		sendMailVO.put("from", from);
-		sendMailVO.put("attachs", arrayAttachs);
-		sendMailVO.put("recipients", arrayRecipients);
-		sendMailVO.put("drmOption", drmOption);
-
-		JSONObject resourceVO = new JSONObject();
-		resourceVO.put("email", "ms01.test@stage.samsung.com");
-		resourceVO.put("localeStr", "ko_KR");
-		resourceVO.put("encoding", "utf-8");
-		resourceVO.put("timeZone", "GMT+9");
-
-		jsonString.put("resourceVO", resourceVO);
-		jsonString.put("sendMailVO", sendMailVO);
-
-		return jsonString;
+	public void addFormField(String name, String value) {
+		printWriter.append("--" + boundary).append(LINE_FEED);
+		printWriter.append("Content-Disposition: form-data; name=\"" + name + "\"").append(LINE_FEED);
+		printWriter.append("Content-Type: text/plain; charset=UTF-8").append(LINE_FEED);
+		printWriter.append(LINE_FEED);
+		printWriter.append(value).append(LINE_FEED);
+		printWriter.flush();
 	}
+
+	public void addHeaderField(String name, String value) {
+		con.setRequestProperty(name, value);
+	}
+
+	public List<String> finish() throws IOException {
+		List<String> response = new ArrayList<String>();
+
+		printWriter.append(LINE_FEED).flush();
+		printWriter.append("--" + boundary + "--").append(LINE_FEED);
+		printWriter.close();
+
+		int status = con.getResponseCode();
+		if (status == HttpURLConnection.HTTP_OK) {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				response.add(line);
+			}
+			reader.close();
+			con.disconnect();
+		} else {
+			throw new IOException("Server returned non-OK status: " + status);
+		}
+		return response;
+	}
+
 }
